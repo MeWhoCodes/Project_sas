@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Teacher dashboard · Student Attendance System{% endblock %}
+{% block content %}
+<section class="dashboard-head">
+    <div>
+        <p class="eyebrow">TEACHER DASHBOARD</p>
+        <h1>Welcome, {{ request.session.get("name") }}</h1>
+        <p class="dashboard-subtitle">Choose a subject to view or mark attendance.</p>
+    </div>
+    {% if selected_subject %}
+    <form class="month-picker" method="get" action="/teacher/dashboard">
+        <input type="hidden" name="subject" value="{{ selected_subject }}">
+        <label for="teacher-month">MONTH OVERVIEW</label>
+        <input id="teacher-month" type="month" name="month" value="{{ month_value }}" data-month-picker>
+        <button class="button button-small" type="submit">View month</button>
+    </form>
+    {% endif %}
+</section>
+{% if not selected_subject %}
+<section class="subject-picker">
+    <h2>Your subjects</h2>
+    <p>Select a subject to take attendance and view the class trend.</p>
+    <div class="subject-grid">
+        {% for subject in subjects %}
+        <a class="subject-card" href="/teacher/dashboard?subject={{ subject }}">
+            <strong>{{ subject }}</strong>
+            <span>Open attendance register →</span>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% else %}
+{% if saved %}<div class="alert success-alert" role="status">Attendance saved for {{ month_name }}.</div>{% endif %}
+{% if weekend_warning %}<div class="alert" role="alert">Attendance cannot be marked on Saturdays or Sundays. Choose a weekday instead.</div>{% endif %}
+<nav class="subject-tabs" aria-label="Your subjects">
+    {% for subject in subjects %}
+    <a class="{{ 'selected' if subject == selected_subject else '' }}" href="/teacher/dashboard?subject={{ subject }}">{{ subject }}</a>
+    {% endfor %}
+</nav>
+<section class="stat-grid">
+    <article class="stat-card"><span class="stat-label">CLASS SIZE</span><strong>{{ student_count }}</strong><small>students enrolled</small></article>
+    <article class="stat-card"><span class="stat-label">MONTH</span><strong>{{ month_name[:3] }}</strong><small>{{ year }} attendance</small></article>
+    <article class="stat-card"><span class="stat-label">SUBJECT</span><strong>{{ selected_subject }}</strong><small>attendance below</small></article>
+</section>
+<section class="content-card chart-card">
+    <div class="card-heading">
+        <div><p class="section-kicker">{{ selected_subject }}</p><h2>Daily attendance</h2><p class="card-subtitle">Students marked present each day in {{ month_name }}.</p></div>
+        <div class="chart-legend"><span><i class="legend-present"></i> Present</span><span><i class="legend-absent"></i> Absent</span></div>
+    </div>
+    <div class="chart-wrap">
+        <canvas id="attendance-chart" data-daily='{{ daily | tojson }}' data-total="{{ student_count }}" aria-label="Bar chart showing daily present and absent student counts for {{ month_name }}"></canvas>
+    </div>
+</section>
+<section class="content-card attendance-card">
+    <div class="card-heading attendance-heading">
+        <div><p class="section-kicker">TAKE ATTENDANCE</p><h2>Daily register</h2><p class="card-subtitle">Choose a date, then mark every student present or absent.</p></div>
+        <span class="count-pill">{{ student_count }} students</span>
+    </div>
+    <form method="post" action="/teacher/attendance">
+        <input type="hidden" name="month" value="{{ month_value }}">
+        <input type="hidden" name="subject" value="{{ selected_subject }}">
+        <div class="date-row">
+            <label for="attendance-date">Attendance date</label>
+            <select id="attendance-date" name="attendance_date" required data-attendance-date>
+                {% for day in working_days %}
+                <option value="{{ day.value }}" {{ "selected" if day.value == selected_date else "" }}>{{ day.label }}</option>
+                {% endfor %}
+            </select>
+            <span class="date-hint" data-date-hint>Weekdays only · {{ month_name }} {{ year }}</span>
+        </div>
+        <div class="table-wrap">
+            <table class="attendance-table">
+                <thead><tr><th>STUDENT</th><th>ROLL NUMBER</th><th class="attendance-choice">TODAY'S STATUS</th></tr></thead>
+                <tbody>
+                {% for student in students %}
+                    {% set current = attendance_for_day.get(student.id, "absent") %}
+                    <tr>
+                        <td><strong>{{ student.name }}</strong></td>
+                        <td class="roll-cell">{{ student.roll_no }}</td>
+                        <td>
+                            <div class="status-options">
+                                <label class="status-option present-option"><input type="radio" name="status_{{ student.id }}" value="present" {{ "checked" if current == "present" else "" }}><span>Present</span></label>
+                                <label class="status-option absent-option"><input type="radio" name="status_{{ student.id }}" value="absent" {{ "checked" if current == "absent" else "" }}><span>Absent</span></label>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="form-footer"><span>Unmarked students will be saved as absent.</span><button class="button button-primary" type="submit">Save attendance</button></div>
+    </form>
+</section>
+{% endif %}
+{% endblock %}

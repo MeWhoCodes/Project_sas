@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Choose a portal · Student Attendance System{% endblock %}
+{% block content %}
+<section class="welcome-layout">
+    <div class="welcome-copy">
+        <p class="eyebrow">ATTENDANCE MANAGEMENT</p>
+        <h1>Student<br><span>Attendance System</span></h1>
+        <p class="welcome-text">View and manage class attendance. Choose your portal to continue.</p>
+    </div>
+    <div class="portal-stack">
+        <p class="section-kicker">CHOOSE YOUR PORTAL</p>
+        <a class="portal-card teacher-card" href="/teacher/login">
+            <span class="portal-info"><strong>Teacher</strong><small>Mark and view student attendance</small></span>
+        </a>
+        <a class="portal-card student-card" href="/student/login">
+            <span class="portal-info"><strong>Student</strong><small>View your attendance record</small></span>
+        </a>
+    </div>
+</section>
+{% endblock %}

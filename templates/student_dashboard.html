@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}My attendance · Student Attendance System{% endblock %}
+{% block content %}
+<section class="dashboard-head student-dashboard-head">
+    <div>
+        <p class="eyebrow">STUDENT PORTAL</p>
+        <h1>Hello, {{ student.name.split()[0] }}</h1>
+        <p class="dashboard-subtitle">Choose a subject to view your attendance.</p>
+    </div>
+    {% if selected_subject %}
+    <form class="month-picker" method="get" action="/student/dashboard">
+        <input type="hidden" name="subject" value="{{ selected_subject }}">
+        <label for="student-month">MONTH OVERVIEW</label>
+        <input id="student-month" type="month" name="month" value="{{ month_value }}">
+        <button class="button button-small" type="submit">View month</button>
+    </form>
+    {% endif %}
+</section>
+<div class="student-meta"><div><strong>{{ student.name }}</strong><small>Roll number {{ student.roll_no }}</small></div>{% if selected_subject %}<span class="month-chip">{{ month_name }} {{ year }}</span>{% endif %}</div>
+{% if not selected_subject %}
+<section class="subject-picker">
+    <h2>Your subjects</h2>
+    <p>Select a subject to see its attendance calendar.</p>
+    <div class="subject-grid">
+        {% for subject in subjects %}
+        <a class="subject-card" href="/student/dashboard?subject={{ subject }}">
+            <strong>{{ subject }}</strong>
+            <span>View attendance calendar →</span>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% else %}
+<nav class="subject-tabs" aria-label="Your subjects">
+    {% for subject in subjects %}
+    <a class="{{ 'selected' if subject == selected_subject else '' }}" href="/student/dashboard?subject={{ subject }}">{{ subject }}</a>
+    {% endfor %}
+    <a class="all-subjects" href="/student/dashboard">All subjects</a>
+</nav>
+<section class="stat-grid student-stat-grid">
+    <article class="stat-card"><span class="stat-label">PRESENT</span><strong>{{ present_count }}</strong><small>days attended</small></article>
+    <article class="stat-card"><span class="stat-label">ABSENT</span><strong>{{ absent_count }}</strong><small>days missed</small></article>
+    <article class="stat-card"><span class="stat-label">ATTENDANCE RATE</span><strong>{{ attendance_rate }}%</strong><small>of marked days</small></article>
+</section>
+<section class="content-card student-record-card">
+    <div class="card-heading"><div><p class="section-kicker">{{ selected_subject }} · YOUR RECORD</p><h2>{{ month_name }} attendance</h2><p class="card-subtitle">A day-by-day look at your {{ selected_subject }} attendance.</p></div><div class="record-key"><span><i class="legend-present"></i> Present</span><span><i class="legend-absent"></i> Absent</span></div></div>
+    <div class="calendar-grid">
+        {% for day in days %}
+        <div class="calendar-day {{ 'day-present' if day.status == 'present' else 'day-absent' if day.status == 'absent' else 'day-weekend' if day.status == 'weekend' else 'day-unmarked' }}">
+            <span class="calendar-date">{{ day.day }}</span>
+            <span class="calendar-status">{{ "Present" if day.status == "present" else "Absent" if day.status == "absent" else "Weekend" if day.status == "weekend" else "—" }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% if total_marked == 0 %}<p class="empty-note">No attendance has been marked for this month yet.</p>{% endif %}
+</section>
+{% endif %}
+{% endblock %}

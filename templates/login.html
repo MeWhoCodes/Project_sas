@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% set is_teacher = portal == "teacher" %}
+{% block title %}{{ "Teacher" if is_teacher else "Student" }} login · Student Attendance System{% endblock %}
+{% block content %}
+<section class="login-layout">
+    <div class="login-aside {{ 'aside-teacher' if is_teacher else 'aside-student' }}">
+        <a class="back-link" href="/">← <span>Choose a portal</span></a>
+        <div class="aside-copy">
+            <p class="eyebrow">{{ "TEACHER LOGIN" if is_teacher else "STUDENT LOGIN" }}</p>
+            <h1>{{ "Teacher" if is_teacher else "Student" }}<br><span>Portal</span></h1>
+            <p>{{ "Sign in to manage class attendance." if is_teacher else "Sign in to check your attendance." }}</p>
+        </div>
+    </div>
+    <div class="login-panel">
+        <div class="login-form-wrap">
+            <h2>Sign in</h2>
+            <p class="form-intro">Enter your details below to access your portal.</p>
+            {% if error %}<div class="alert" role="alert">{{ error }}</div>{% endif %}
+            <form class="auth-form" method="post" autocomplete="off" action="{{ '/teacher/login' if is_teacher else '/student/login' }}">
+                <label for="identity">{{ "Username" if is_teacher else "Roll number" }}</label>
+                <input id="identity" name="{{ 'username' if is_teacher else 'roll_no' }}" type="text"
+                       placeholder="{{ 'Enter your username' if is_teacher else 'e.g. 25imai003' }}"
+                       autocomplete="off" required autofocus>
+                <label for="password">Password</label>
+                <input id="password" name="password" type="password" placeholder="Enter your password"
+                       autocomplete="new-password" required>
+                <button class="button button-primary submit-button" type="submit">Sign in</button>
+            </form>
+            <p class="switch-portal">Need a different portal? <a href="{{ '/student/login' if is_teacher else '/teacher/login' }}">Sign in as {{ "a student" if is_teacher else "a teacher" }}</a></p>
+        </div>
+    </div>
+</section>
+{% endblock %}
